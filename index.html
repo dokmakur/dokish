@@ -69,10 +69,10 @@
           </div>
           <div class="about-grid">
             <p>
-              I combine software engineering, data analysis, research, and entrepreneurship to create digital solutions that generate measurable impact. My work spans web application development, data-driven systems, and mentoring future technology professionals through practical, hands-on learning.
+              I combine software engineering, data analysis, research, and entrepreneurship to create digital solutions that generate measurable impact. My work spans web application development, data[...]
             </p>
             <p>
-             As the founder of Baiconnect Data & Analytics, I am building a research and analytics firm that leverages Artificial Intelligence, advanced analytics, and evidence-based research to help organizations make smarter strategic decisions, optimize performance, and solve complex challenges with confidence.
+             As the founder of Baiconnect Data & Analytics, I am building a research and analytics firm that leverages Artificial Intelligence, advanced analytics, and evidence-based research to help [...]
             </p>
           </div>
         </section>
@@ -176,9 +176,9 @@
                 <div class="featured-card-copy">
                   <p class="eyebrow">Featured work</p>
                   <h3>Digital systems and teaching innovation</h3>
-                  <p>Engineering practical digital solutions and transformative learning experiences by combining software engineering, data analytics, research, and technology to solve real-world challenges and drive strategic impact.</p>
+                  <p>Engineering practical digital solutions and transformative learning experiences by combining software engineering, data analytics, research, and technology to solve real-world cha[...]
                   <blockquote class="quote-block">
-                    “Insight-driven • Innovation-focused • Impact-oriented.”
+                    "Insight-driven • Innovation-focused • Impact-oriented."
                   </blockquote>
                 </div>
               </div>
@@ -211,12 +211,150 @@
       </main>
 
       <footer class="site-footer">
-        <p>Copyrights © <span id="year"></span> Dok Makur</p>
+        <div class="footer-content">
+          <div class="footer-main">
+            <p>Copyrights © <span id="year"></span> Dok Makur</p>
+          </div>
+
+          <!-- Website Analytics Section -->
+          <div class="analytics-section">
+            <h4>Website Analytics</h4>
+            <div class="analytics-grid">
+              <div class="analytics-stat">
+                <span class="stat-label">Total Visitors</span>
+                <span class="stat-value" id="total-visitors">0</span>
+              </div>
+              <div class="analytics-stat">
+                <span class="stat-label">Session Count</span>
+                <span class="stat-value" id="session-count">0</span>
+              </div>
+              <div class="analytics-stat">
+                <span class="stat-label">CV Downloads</span>
+                <span class="stat-value" id="cv-downloads">0</span>
+              </div>
+              <div class="analytics-stat">
+                <span class="stat-label">Resources Downloaded</span>
+                <span class="stat-value" id="resources-downloads">0</span>
+              </div>
+            </div>
+
+            <div class="analytics-details">
+              <p class="analytics-label">Last Updated: <span id="last-updated">--</span></p>
+              <p class="analytics-note">Analytics data is tracked locally and updated in real-time.</p>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
     <script src="script.js"></script>
     <script>
+      // Set current year
       document.getElementById('year').textContent = new Date().getFullYear();
+
+      // Website Analytics Tracking
+      class PortfolioAnalytics {
+        constructor() {
+          this.storageKey = 'dokish_analytics';
+          this.initializeAnalytics();
+          this.trackPageView();
+          this.attachDownloadListeners();
+          this.displayAnalytics();
+        }
+
+        initializeAnalytics() {
+          let analytics = this.getAnalytics();
+          if (!analytics) {
+            analytics = {
+              totalVisitors: 0,
+              sessionCount: 0,
+              cvDownloads: 0,
+              resourcesDownloads: 0,
+              lastUpdated: new Date().toISOString(),
+              sessionStartTime: new Date().getTime()
+            };
+            this.saveAnalytics(analytics);
+          }
+        }
+
+        trackPageView() {
+          let analytics = this.getAnalytics();
+          
+          // Increment total visitors (unique per session)
+          if (!sessionStorage.getItem('session_tracked')) {
+            analytics.totalVisitors += 1;
+            analytics.sessionCount += 1;
+            sessionStorage.setItem('session_tracked', 'true');
+          }
+          
+          analytics.lastUpdated = new Date().toISOString();
+          this.saveAnalytics(analytics);
+        }
+
+        trackDownload(type) {
+          let analytics = this.getAnalytics();
+          
+          if (type === 'cv') {
+            analytics.cvDownloads += 1;
+          } else if (type === 'resource') {
+            analytics.resourcesDownloads += 1;
+          }
+          
+          analytics.lastUpdated = new Date().toISOString();
+          this.saveAnalytics(analytics);
+          this.displayAnalytics();
+        }
+
+        attachDownloadListeners() {
+          // Track CV downloads
+          const cvLinks = document.querySelectorAll('a[href*="CV.pdf"]');
+          cvLinks.forEach(link => {
+            link.addEventListener('click', () => {
+              this.trackDownload('cv');
+            });
+          });
+
+          // Track external resource downloads
+          const resourceLinks = document.querySelectorAll('a[href^="http"]');
+          resourceLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+              // Only track if it looks like a download or resource
+              if (link.getAttribute('href').includes('.pdf') || 
+                  link.getAttribute('href').includes('.zip') ||
+                  link.getAttribute('href').includes('.doc')) {
+                this.trackDownload('resource');
+              }
+            });
+          });
+        }
+
+        displayAnalytics() {
+          const analytics = this.getAnalytics();
+          
+          document.getElementById('total-visitors').textContent = analytics.totalVisitors;
+          document.getElementById('session-count').textContent = analytics.sessionCount;
+          document.getElementById('cv-downloads').textContent = analytics.cvDownloads;
+          document.getElementById('resources-downloads').textContent = analytics.resourcesDownloads;
+          
+          // Format last updated time
+          const lastUpdated = new Date(analytics.lastUpdated);
+          const timeString = lastUpdated.toLocaleString();
+          document.getElementById('last-updated').textContent = timeString;
+        }
+
+        saveAnalytics(data) {
+          localStorage.setItem(this.storageKey, JSON.stringify(data));
+        }
+
+        getAnalytics() {
+          const data = localStorage.getItem(this.storageKey);
+          return data ? JSON.parse(data) : null;
+        }
+      }
+
+      // Initialize analytics when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        new PortfolioAnalytics();
+      });
     </script>
   </body>
 </html>
