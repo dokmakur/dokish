@@ -69,10 +69,10 @@
           </div>
           <div class="about-grid">
             <p>
-              I combine software engineering, data analysis, research, and entrepreneurship to create digital solutions that generate measurable impact. My work spans web application development, data[...]
+              I combine software engineering, data analysis, research, and entrepreneurship to create digital solutions that generate measurable impact. My work spans web application development, [...]
             </p>
             <p>
-             As the founder of Baiconnect Data & Analytics, I am building a research and analytics firm that leverages Artificial Intelligence, advanced analytics, and evidence-based research to help [...]
+             As the founder of Baiconnect Data & Analytics, I am building a research and analytics firm that leverages Artificial Intelligence, advanced analytics, and evidence-based research to h[...]
             </p>
           </div>
         </section>
@@ -176,7 +176,7 @@
                 <div class="featured-card-copy">
                   <p class="eyebrow">Featured work</p>
                   <h3>Digital systems and teaching innovation</h3>
-                  <p>Engineering practical digital solutions and transformative learning experiences by combining software engineering, data analytics, research, and technology to solve real-world cha[...]
+                  <p>Engineering practical digital solutions and transformative learning experiences by combining software engineering, data analytics, research, and technology to solve real-worl[...]
                   <blockquote class="quote-block">
                     "Insight-driven • Innovation-focused • Impact-oriented."
                   </blockquote>
@@ -216,31 +216,68 @@
             <p>Copyrights © <span id="year"></span> Dok Makur</p>
           </div>
 
-          <!-- Website Analytics Section -->
+          <!-- Enhanced Website Analytics Section -->
           <div class="analytics-section">
-            <h4>Website Analytics</h4>
+            <div class="analytics-header">
+              <h4>📊 Portfolio Analytics</h4>
+              <button id="analytics-toggle" class="analytics-toggle" aria-label="Toggle analytics details">
+                <span class="toggle-icon">⊕</span>
+              </button>
+            </div>
+            
             <div class="analytics-grid">
-              <div class="analytics-stat">
-                <span class="stat-label">Total Visitors</span>
-                <span class="stat-value" id="total-visitors">0</span>
+              <div class="analytics-stat stat-primary">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                  <span class="stat-label">Total Visitors</span>
+                  <span class="stat-value" id="total-visitors">0</span>
+                </div>
               </div>
-              <div class="analytics-stat">
-                <span class="stat-label">Session Count</span>
-                <span class="stat-value" id="session-count">0</span>
+              <div class="analytics-stat stat-secondary">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-content">
+                  <span class="stat-label">Sessions</span>
+                  <span class="stat-value" id="session-count">0</span>
+                </div>
               </div>
-              <div class="analytics-stat">
-                <span class="stat-label">CV Downloads</span>
-                <span class="stat-value" id="cv-downloads">0</span>
+              <div class="analytics-stat stat-tertiary">
+                <div class="stat-icon">📄</div>
+                <div class="stat-content">
+                  <span class="stat-label">CV Downloads</span>
+                  <span class="stat-value" id="cv-downloads">0</span>
+                </div>
               </div>
-              <div class="analytics-stat">
-                <span class="stat-label">Resources Downloaded</span>
-                <span class="stat-value" id="resources-downloads">0</span>
+              <div class="analytics-stat stat-quaternary">
+                <div class="stat-icon">⬇️</div>
+                <div class="stat-content">
+                  <span class="stat-label">Resources</span>
+                  <span class="stat-value" id="resources-downloads">0</span>
+                </div>
               </div>
             </div>
 
-            <div class="analytics-details">
-              <p class="analytics-label">Last Updated: <span id="last-updated">--</span></p>
-              <p class="analytics-note">Analytics data is tracked locally and updated in real-time.</p>
+            <div class="analytics-details" id="analytics-details" style="display: none;">
+              <div class="analytics-detail-row">
+                <span class="detail-label">Avg. Session Duration:</span>
+                <span class="detail-value" id="avg-duration">-- sec</span>
+              </div>
+              <div class="analytics-detail-row">
+                <span class="detail-label">Engagement Rate:</span>
+                <span class="detail-value" id="engagement-rate">--</span>
+              </div>
+              <div class="analytics-detail-row">
+                <span class="detail-label">Most Visited Section:</span>
+                <span class="detail-value" id="popular-section">--</span>
+              </div>
+              <div class="analytics-detail-row">
+                <span class="detail-label">Current Session:</span>
+                <span class="detail-value" id="current-session-time">-- sec</span>
+              </div>
+              <div class="analytics-detail-row">
+                <span class="detail-label">Last Updated:</span>
+                <span class="detail-value" id="last-updated">--</span>
+              </div>
+              <p class="analytics-note">📍 Analytics tracked locally. Data persists across visits.</p>
             </div>
           </div>
         </div>
@@ -251,14 +288,19 @@
       // Set current year
       document.getElementById('year').textContent = new Date().getFullYear();
 
-      // Website Analytics Tracking
-      class PortfolioAnalytics {
+      // Enhanced Website Analytics Tracking
+      class EnhancedPortfolioAnalytics {
         constructor() {
-          this.storageKey = 'dokish_analytics';
+          this.storageKey = 'dokish_analytics_enhanced';
+          this.sessionKey = 'dokish_session_id';
           this.initializeAnalytics();
           this.trackPageView();
+          this.trackSectionViews();
           this.attachDownloadListeners();
+          this.setupAnalyticsToggle();
+          this.startSessionTimer();
           this.displayAnalytics();
+          this.updateAnalyticsInRealTime();
         }
 
         initializeAnalytics() {
@@ -270,9 +312,17 @@
               cvDownloads: 0,
               resourcesDownloads: 0,
               lastUpdated: new Date().toISOString(),
-              sessionStartTime: new Date().getTime()
+              sessionStartTime: new Date().getTime(),
+              sectionViews: {},
+              sessionDurations: [],
+              totalEngagementTime: 0
             };
             this.saveAnalytics(analytics);
+          }
+          
+          // Initialize session ID
+          if (!sessionStorage.getItem(this.sessionKey)) {
+            sessionStorage.setItem(this.sessionKey, 'session_' + Date.now());
           }
         }
 
@@ -288,6 +338,29 @@
           
           analytics.lastUpdated = new Date().toISOString();
           this.saveAnalytics(analytics);
+        }
+
+        trackSectionViews() {
+          const sections = document.querySelectorAll('main section[id]');
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                const sectionId = entry.target.id;
+                let analytics = this.getAnalytics();
+                
+                if (!analytics.sectionViews) {
+                  analytics.sectionViews = {};
+                }
+                
+                analytics.sectionViews[sectionId] = (analytics.sectionViews[sectionId] || 0) + 1;
+                analytics.totalEngagementTime += 5; // Add 5 seconds for each section view
+                
+                this.saveAnalytics(analytics);
+              }
+            });
+          }, { threshold: 0.3 });
+          
+          sections.forEach(section => observer.observe(section));
         }
 
         trackDownload(type) {
@@ -317,7 +390,6 @@
           const resourceLinks = document.querySelectorAll('a[href^="http"]');
           resourceLinks.forEach(link => {
             link.addEventListener('click', (e) => {
-              // Only track if it looks like a download or resource
               if (link.getAttribute('href').includes('.pdf') || 
                   link.getAttribute('href').includes('.zip') ||
                   link.getAttribute('href').includes('.doc')) {
@@ -327,18 +399,87 @@
           });
         }
 
+        startSessionTimer() {
+          setInterval(() => {
+            let analytics = this.getAnalytics();
+            const sessionStartTime = analytics.sessionStartTime;
+            const currentSessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
+            
+            // Update in session storage for real-time display
+            sessionStorage.setItem('current_session_duration', currentSessionDuration);
+          }, 1000);
+        }
+
+        setupAnalyticsToggle() {
+          const toggleBtn = document.getElementById('analytics-toggle');
+          const detailsDiv = document.getElementById('analytics-details');
+          
+          toggleBtn.addEventListener('click', () => {
+            const isHidden = detailsDiv.style.display === 'none';
+            detailsDiv.style.display = isHidden ? 'block' : 'none';
+            toggleBtn.querySelector('.toggle-icon').textContent = isHidden ? '⊖' : '⊕';
+          });
+        }
+
+        getPopularSection() {
+          const analytics = this.getAnalytics();
+          if (!analytics.sectionViews || Object.keys(analytics.sectionViews).length === 0) {
+            return 'None';
+          }
+          
+          let maxSection = '';
+          let maxViews = 0;
+          
+          for (const [section, views] of Object.entries(analytics.sectionViews)) {
+            if (views > maxViews) {
+              maxViews = views;
+              maxSection = section.charAt(0).toUpperCase() + section.slice(1);
+            }
+          }
+          
+          return maxSection || 'None';
+        }
+
+        calculateEngagementRate() {
+          const analytics = this.getAnalytics();
+          const totalEngagementTime = analytics.totalEngagementTime || 0;
+          const sessionDurationSec = Math.floor((Date.now() - analytics.sessionStartTime) / 1000);
+          
+          if (sessionDurationSec === 0) return '0%';
+          
+          const rate = Math.round((totalEngagementTime / sessionDurationSec) * 100);
+          return Math.min(rate, 100) + '%';
+        }
+
         displayAnalytics() {
           const analytics = this.getAnalytics();
+          const currentSessionDuration = sessionStorage.getItem('current_session_duration') || 0;
           
           document.getElementById('total-visitors').textContent = analytics.totalVisitors;
           document.getElementById('session-count').textContent = analytics.sessionCount;
           document.getElementById('cv-downloads').textContent = analytics.cvDownloads;
           document.getElementById('resources-downloads').textContent = analytics.resourcesDownloads;
           
+          // Update detailed stats
+          const avgDuration = analytics.sessionCount > 0 
+            ? Math.round(analytics.totalEngagementTime / analytics.sessionCount)
+            : 0;
+          
+          document.getElementById('avg-duration').textContent = avgDuration + ' sec';
+          document.getElementById('engagement-rate').textContent = this.calculateEngagementRate();
+          document.getElementById('popular-section').textContent = this.getPopularSection();
+          document.getElementById('current-session-time').textContent = currentSessionDuration + ' sec';
+          
           // Format last updated time
           const lastUpdated = new Date(analytics.lastUpdated);
           const timeString = lastUpdated.toLocaleString();
           document.getElementById('last-updated').textContent = timeString;
+        }
+
+        updateAnalyticsInRealTime() {
+          setInterval(() => {
+            this.displayAnalytics();
+          }, 5000); // Update every 5 seconds
         }
 
         saveAnalytics(data) {
@@ -351,9 +492,9 @@
         }
       }
 
-      // Initialize analytics when DOM is ready
+      // Initialize enhanced analytics when DOM is ready
       document.addEventListener('DOMContentLoaded', () => {
-        new PortfolioAnalytics();
+        new EnhancedPortfolioAnalytics();
       });
     </script>
   </body>
