@@ -165,18 +165,12 @@
             <article class="card featured-card">
               <div class="featured-card-content">
                 <div class="featured-card-visual">
-                  <div class="featured-image-panel">
-                    <div class="featured-image-overlay">
-                      <p class="eyebrow">Featured project</p>
-                      <h3>Intelligent Systems, Data Analytics, and Digital Strategy</h3>
-                      <p>Innovating Through Software, Research, and Education.</p>
-                    </div>
-                  </div>
+                  <img src="dokish.jpg" alt="Featured project showcase" class="featured-image" />
                 </div>
                 <div class="featured-card-copy">
                   <p class="eyebrow">Featured work</p>
                   <h3>Digital systems and teaching innovation</h3>
-                  <p>Engineering practical digital solutions and transformative learning experiences by combining software engineering, data analytics, research, and technology to solve real-worl[...]
+                  <p>Engineering practical digital solutions and transformative learning experiences by combining software engineering, data analytics, research, and technology to solve real-world challenges.</p>
                   <blockquote class="quote-block">
                     "Insight-driven • Innovation-focused • Impact-oriented."
                   </blockquote>
@@ -216,10 +210,10 @@
             <p>Copyrights © <span id="year"></span> Dok Makur</p>
           </div>
 
-          <!-- Enhanced Website Analytics Section -->
+          <!-- Enhanced Web Analytics Section -->
           <div class="analytics-section">
             <div class="analytics-header">
-              <h4>📊 Portfolio Analytics</h4>
+              <h4>📊 Web Analytics</h4>
               <button id="analytics-toggle" class="analytics-toggle" aria-label="Toggle analytics details">
                 <span class="toggle-icon">⊕</span>
               </button>
@@ -277,7 +271,7 @@
                 <span class="detail-label">Last Updated:</span>
                 <span class="detail-value" id="last-updated">--</span>
               </div>
-              <p class="analytics-note">📍 Analytics tracked locally. Data persists across visits.</p>
+              <p class="analytics-note">🌐 Analytics shared across all visitors in real-time.</p>
             </div>
           </div>
         </div>
@@ -288,12 +282,13 @@
       // Set current year
       document.getElementById('year').textContent = new Date().getFullYear();
 
-      // Enhanced Website Analytics Tracking
-      class EnhancedPortfolioAnalytics {
+      // Global Web Analytics Tracking (Shared Across All Visitors)
+      class GlobalWebAnalytics {
         constructor() {
-          this.storageKey = 'dokish_analytics_enhanced';
-          this.sessionKey = 'dokish_session_id';
+          this.apiEndpoint = 'https://analytics-api.dokish.me/api/analytics'; // Replace with your backend URL
+          this.localStorageKey = 'dokish_analytics_local';
           this.initializeAnalytics();
+          this.syncWithServer();
           this.trackPageView();
           this.trackSectionViews();
           this.attachDownloadListeners();
@@ -304,7 +299,7 @@
         }
 
         initializeAnalytics() {
-          let analytics = this.getAnalytics();
+          let analytics = this.getLocalAnalytics();
           if (!analytics) {
             analytics = {
               totalVisitors: 0,
@@ -317,27 +312,32 @@
               sessionDurations: [],
               totalEngagementTime: 0
             };
-            this.saveAnalytics(analytics);
+            this.saveLocalAnalytics(analytics);
           }
           
-          // Initialize session ID
-          if (!sessionStorage.getItem(this.sessionKey)) {
-            sessionStorage.setItem(this.sessionKey, 'session_' + Date.now());
+          if (!sessionStorage.getItem('dokish_session_id')) {
+            sessionStorage.setItem('dokish_session_id', 'session_' + Date.now());
           }
         }
 
         trackPageView() {
-          let analytics = this.getAnalytics();
+          let analytics = this.getLocalAnalytics();
           
-          // Increment total visitors (unique per session)
           if (!sessionStorage.getItem('session_tracked')) {
             analytics.totalVisitors += 1;
             analytics.sessionCount += 1;
             sessionStorage.setItem('session_tracked', 'true');
+            
+            // Send to server
+            this.sendToServer({
+              event: 'page_view',
+              timestamp: new Date().toISOString(),
+              sessionId: sessionStorage.getItem('dokish_session_id')
+            });
           }
           
           analytics.lastUpdated = new Date().toISOString();
-          this.saveAnalytics(analytics);
+          this.saveLocalAnalytics(analytics);
         }
 
         trackSectionViews() {
@@ -346,16 +346,23 @@
             entries.forEach(entry => {
               if (entry.isIntersecting) {
                 const sectionId = entry.target.id;
-                let analytics = this.getAnalytics();
+                let analytics = this.getLocalAnalytics();
                 
                 if (!analytics.sectionViews) {
                   analytics.sectionViews = {};
                 }
                 
                 analytics.sectionViews[sectionId] = (analytics.sectionViews[sectionId] || 0) + 1;
-                analytics.totalEngagementTime += 5; // Add 5 seconds for each section view
+                analytics.totalEngagementTime += 5;
                 
-                this.saveAnalytics(analytics);
+                this.saveLocalAnalytics(analytics);
+                
+                // Send to server
+                this.sendToServer({
+                  event: 'section_view',
+                  section: sectionId,
+                  timestamp: new Date().toISOString()
+                });
               }
             });
           }, { threshold: 0.3 });
@@ -364,7 +371,7 @@
         }
 
         trackDownload(type) {
-          let analytics = this.getAnalytics();
+          let analytics = this.getLocalAnalytics();
           
           if (type === 'cv') {
             analytics.cvDownloads += 1;
@@ -373,12 +380,19 @@
           }
           
           analytics.lastUpdated = new Date().toISOString();
-          this.saveAnalytics(analytics);
+          this.saveLocalAnalytics(analytics);
+          
+          // Send to server
+          this.sendToServer({
+            event: 'download',
+            type: type,
+            timestamp: new Date().toISOString()
+          });
+          
           this.displayAnalytics();
         }
 
         attachDownloadListeners() {
-          // Track CV downloads
           const cvLinks = document.querySelectorAll('a[href*="CV.pdf"]');
           cvLinks.forEach(link => {
             link.addEventListener('click', () => {
@@ -386,7 +400,6 @@
             });
           });
 
-          // Track external resource downloads
           const resourceLinks = document.querySelectorAll('a[href^="http"]');
           resourceLinks.forEach(link => {
             link.addEventListener('click', (e) => {
@@ -401,11 +414,10 @@
 
         startSessionTimer() {
           setInterval(() => {
-            let analytics = this.getAnalytics();
+            let analytics = this.getLocalAnalytics();
             const sessionStartTime = analytics.sessionStartTime;
             const currentSessionDuration = Math.floor((Date.now() - sessionStartTime) / 1000);
             
-            // Update in session storage for real-time display
             sessionStorage.setItem('current_session_duration', currentSessionDuration);
           }, 1000);
         }
@@ -422,7 +434,7 @@
         }
 
         getPopularSection() {
-          const analytics = this.getAnalytics();
+          const analytics = this.getLocalAnalytics();
           if (!analytics.sectionViews || Object.keys(analytics.sectionViews).length === 0) {
             return 'None';
           }
@@ -441,7 +453,7 @@
         }
 
         calculateEngagementRate() {
-          const analytics = this.getAnalytics();
+          const analytics = this.getLocalAnalytics();
           const totalEngagementTime = analytics.totalEngagementTime || 0;
           const sessionDurationSec = Math.floor((Date.now() - analytics.sessionStartTime) / 1000);
           
@@ -452,7 +464,7 @@
         }
 
         displayAnalytics() {
-          const analytics = this.getAnalytics();
+          const analytics = this.getLocalAnalytics();
           const currentSessionDuration = sessionStorage.getItem('current_session_duration') || 0;
           
           document.getElementById('total-visitors').textContent = analytics.totalVisitors;
@@ -460,7 +472,6 @@
           document.getElementById('cv-downloads').textContent = analytics.cvDownloads;
           document.getElementById('resources-downloads').textContent = analytics.resourcesDownloads;
           
-          // Update detailed stats
           const avgDuration = analytics.sessionCount > 0 
             ? Math.round(analytics.totalEngagementTime / analytics.sessionCount)
             : 0;
@@ -470,7 +481,6 @@
           document.getElementById('popular-section').textContent = this.getPopularSection();
           document.getElementById('current-session-time').textContent = currentSessionDuration + ' sec';
           
-          // Format last updated time
           const lastUpdated = new Date(analytics.lastUpdated);
           const timeString = lastUpdated.toLocaleString();
           document.getElementById('last-updated').textContent = timeString;
@@ -478,23 +488,56 @@
 
         updateAnalyticsInRealTime() {
           setInterval(() => {
+            this.syncWithServer();
             this.displayAnalytics();
-          }, 5000); // Update every 5 seconds
+          }, 5000);
         }
 
-        saveAnalytics(data) {
-          localStorage.setItem(this.storageKey, JSON.stringify(data));
+        sendToServer(data) {
+          // Send analytics data to your backend server
+          fetch(this.apiEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+          }).catch(err => {
+            // Silently handle errors - analytics shouldn't break the site
+            console.debug('Analytics sync skipped');
+          });
         }
 
-        getAnalytics() {
-          const data = localStorage.getItem(this.storageKey);
+        syncWithServer() {
+          // Fetch latest analytics from server
+          fetch(this.apiEndpoint)
+            .then(response => response.json())
+            .then(data => {
+              // Update display with server data if available
+              if (data && data.totalVisitors !== undefined) {
+                document.getElementById('total-visitors').textContent = data.totalVisitors || 0;
+                document.getElementById('session-count').textContent = data.sessionCount || 0;
+                document.getElementById('cv-downloads').textContent = data.cvDownloads || 0;
+                document.getElementById('resources-downloads').textContent = data.resourcesDownloads || 0;
+              }
+            })
+            .catch(err => {
+              console.debug('Analytics fetch skipped');
+            });
+        }
+
+        saveLocalAnalytics(data) {
+          localStorage.setItem(this.localStorageKey, JSON.stringify(data));
+        }
+
+        getLocalAnalytics() {
+          const data = localStorage.getItem(this.localStorageKey);
           return data ? JSON.parse(data) : null;
         }
       }
 
-      // Initialize enhanced analytics when DOM is ready
+      // Initialize analytics when DOM is ready
       document.addEventListener('DOMContentLoaded', () => {
-        new EnhancedPortfolioAnalytics();
+        new GlobalWebAnalytics();
       });
     </script>
   </body>
