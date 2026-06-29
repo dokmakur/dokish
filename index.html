@@ -87,7 +87,7 @@
           </div>
           
           <div class="experience-projects-grid">
-            <!-- Professional Focus Column -->
+          
             <div class="experience-column">
               <div class="column-header">
                 <p class="eyebrow">Experience</p>
@@ -116,7 +116,7 @@
                   <div class="org-header">
                     <div>
                       <h3>Strategic Leadership</h3>
-                      <p class="meta">Technology, operations, and growth</p>
+                      <p class="meta">Technology, Operations, and Growth</p>
                     </div>
                   </div>
                   <p>Leading teams and initiatives at the intersection of technology, research, and executive decision-making to drive sustainable impact.</p>
@@ -127,7 +127,7 @@
                     <div>
                       <h3>Baiconnect Data & Analytics</h3>
                       <h4>Founder</h4>
-                      <p class="meta">Research & Analytics • 2024 – Present</p>
+                      <p class="meta">Research & Analytics • 2021 – Present</p>
                     </div>
                   </div>
                   <p>Building a research and analytics firm that applies AI, advanced analytics, and evidence-based insights to help organizations make smarter strategic decisions.</p>
@@ -135,7 +135,6 @@
               </div>
             </div>
 
-            <!-- Selected Work Column -->
             <div class="projects-column">
               <div class="column-header">
                 <p class="eyebrow">Projects</p>
@@ -211,10 +210,9 @@
             <p>Copyrights © <span id="year"></span> Dok Makur</p>
           </div>
 
-          <!-- Enhanced Web Analytics Section -->
           <div class="analytics-section">
             <div class="analytics-header">
-              <h4>📊 Web Analytics</h4>
+              <h4>📊 Dokish Web Analytics</h4>
               <button id="analytics-toggle" class="analytics-toggle" aria-label="Toggle analytics details">
                 <span class="toggle-icon">⊕</span>
               </button>
@@ -224,7 +222,7 @@
               <div class="analytics-stat stat-primary">
                 <div class="stat-icon">👥</div>
                 <div class="stat-content">
-                  <span class="stat-label">Total Visitors</span>
+                  <span class="stat-label">Your Visitings</span>
                   <span class="stat-value" id="total-visitors">0</span>
                 </div>
               </div>
@@ -272,7 +270,7 @@
                 <span class="detail-label">Last Updated:</span>
                 <span class="detail-value" id="last-updated">--</span>
               </div>
-              <p class="analytics-note">🌐 Analytics shared across all visitors in real-time.</p>
+              <p class="analytics-note">🌐 Analytics shared in real-time.</p>
             </div>
           </div>
         </div>
@@ -280,13 +278,13 @@
     </div>
     <script src="script.js"></script>
     <script>
-      // Set current year
+      
       document.getElementById('year').textContent = new Date().getFullYear();
 
-      // Global Web Analytics Tracking (Shared Across All Visitors)
+   
       class GlobalWebAnalytics {
         constructor() {
-          this.apiEndpoint = 'https://analytics-api.dokish.me/api/analytics'; // Replace with your backend URL
+          this.apiEndpoint = 'https://analytics-api.dokish.me/api/analytics'; 
           this.localStorageKey = 'dokish_analytics_local';
           this.initializeAnalytics();
           this.syncWithServer();
